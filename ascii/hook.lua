@@ -86,4 +86,3 @@ function hook.del(name)
 		end
 	end
 end
-

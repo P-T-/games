@@ -2,8 +2,8 @@ require("hook")
 
 local resume
 local yield=coroutine.yield
-function pull(n)
-	hook.new(n,function(...)
+function pull(...)
+	hook.new({...},function(...)
 		resume(...)
 		hook.stop()
 	end)
@@ -53,21 +53,31 @@ local function main()
 		new(math.floor(letters))
 		local cn
 		while not cn do
-			local x,y,bt=pull("mouse_down")
+			local x,y,bt=pull("mouse_down","key_down")
 			local w,h=graphics.getDimensions()
-			local bw=math.floor(w/6)
-			local bh=math.floor(bw/1.2)
-			for l1=1,4 do
-				local c=math.floor((l1/5)*w)
-				if x>c-(bw/2) and y>200-(bh/2) and x<c+(bw/2) and y<c+(bh/2) then
-					if current.answer==tonumber(current.answers[l1],16) then
-						cn=l1
-						letters=math.min(letters+0.5,24)
-					elseif not current.answered[l1] then
-						current.answered[l1]=string.char(tonumber(current.answers[l1],16))
-						letters=math.max(letters-0.5,4)
+			local function check(l)
+				if current.answer==tonumber(current.answers[l],16) then
+					cn=l
+					letters=math.min(letters+0.5,24)
+				elseif not current.answered[l] then
+					current.answered[l]=string.char(tonumber(current.answers[l],16))
+					letters=math.max(letters-0.5,4)
+				end
+			end
+			if hook.name=="mouse_down" then
+				local bw=math.floor(w/6)
+				local bh=math.floor(bw/1.2)
+				for l1=1,4 do
+					local c=math.floor((l1/5)*w)
+					if x>c-(bw/2) and y>200-(bh/2) and x<c+(bw/2) and y<c+(bh/2) then
+						check(l1)
+						break
 					end
-					break
+				end
+			elseif hook.name=="key_down" then
+				local key=tonumber(x)
+				if key>0 and key<5 then
+					check(key)
 				end
 			end
 		end
@@ -85,6 +95,10 @@ end
 
 function love.mousepressed(x,y,bt)
 	hook.queue("mouse_down",x,y,bt)
+end
+
+function love.keypressed(k,r)
+	hook.queue("key_down",k,r)
 end
 
 function love.update(dt)

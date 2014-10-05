@@ -44,7 +44,7 @@ function hook.queue(name,...)
 		for k,v in tpairs(hooks[nme] or {}) do
 			if v then
 				ed=false
-				hook.name=name
+				hook.name=nme
 				p={v(...)}
 				if callback then
 					callback(unpack(p))
